@@ -28,9 +28,8 @@
   }
   .header .container{ max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
 
-  /* Лого с градиентом и will-change для плавности */
+  /* Лого с градиентом (без смещения при скролле) */
   .logo{
-    will-change: transform;
     font-weight:900; font-size:26px; letter-spacing:.6px; line-height:1;
     background: linear-gradient(90deg, #eafff7 0%, #6bffb5 30%, #00ff88 50%, #9fffd8 70%, #eafff7 100%);
     background-size:200% auto;
@@ -38,7 +37,6 @@
     filter: drop-shadow(0 0 10px rgba(0,255,136,.35));
     animation: logoGlow 8s ease-in-out infinite;
     user-select:none;
-    transition: transform .08s linear;
   }
   @keyframes logoGlow{
     0%,100%{ background-position:0% 50%; filter: drop-shadow(0 0 8px rgba(0,255,136,.3)); }
@@ -47,14 +45,13 @@
 
   .actions{ display:flex; align-items:center; gap:10px; }
   .icon-btn{
-    will-change: transform;
     width:40px; height:40px; border-radius:50%;
     background: rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.25);
     box-shadow: 0 0 12px rgba(0,255,136,.35), 0 0 24px rgba(0,255,136,.15);
     display:inline-flex; align-items:center; justify-content:center; color:var(--green);
-    transition: transform .08s linear, box-shadow .2s ease, filter .2s ease; text-decoration:none; cursor:pointer;
+    transition: transform .18s ease, box-shadow .2s ease, filter .2s ease; text-decoration:none; cursor:pointer;
   }
-  .icon-btn:hover{ transform:translate(0,0) scale(1.08); box-shadow:0 0 16px rgba(0,255,136,.8), 0 0 40px rgba(0,255,136,.35); }
+  .icon-btn:hover{ transform: scale(1.08); box-shadow:0 0 16px rgba(0,255,136,.8), 0 0 40px rgba(0,255,136,.35); }
   .icon-btn:focus{ outline:none; box-shadow: 0 0 0 3px rgba(0,255,136,.35), 0 0 0 6px rgba(0,255,136,.2); }
 
   .hero{ position:relative; z-index:1; max-width:1200px; margin:40px auto 10px; padding:32px 22px 0; text-align:left; }
@@ -270,39 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', setCanvasSize);
     document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stop(); else start(); });
     start();
-  }
-
-  // Скролл-анимация: логотип влево-вниз, кнопка вправо-вниз (смещение по X и Y без ограничения по Y)
-  const logo = document.getElementById('logo');
-  const propose = document.getElementById('proposeBtn');
-  let lastY = 0, ticking = false;
-
-  // Коэффициенты смещения: подбери под себя
-  const coefX = 0.20; // чем больше, тем сильнее уходит вбок
-  const coefY = 0.20; // чем больше, тем сильнее уходит вниз
-
-  function onScroll(){
-    lastY = window.scrollY || document.documentElement.scrollTop || 0;
-    if(!ticking){
-      requestAnimationFrame(applyShift);
-      ticking = true;
-    }
-  }
-  function applyShift(){
-    const y = lastY;
-    const xShift = y * coefX;
-    const yShift = y * coefY;
-
-    // Лого — влево и вниз
-    logo.style.transform = `translate3d(${-xShift}px, ${yShift}px, 0)`;
-    // Кнопка — вправо и вниз
-    propose.style.transform = `translate3d(${xShift}px, ${yShift}px, 0)`;
-
-    ticking = false;
-  }
-  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    window.addEventListener('scroll', onScroll, { passive:true });
-    onScroll(); // первичное применение
   }
 });
 </script>
