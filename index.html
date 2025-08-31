@@ -27,7 +27,9 @@
   }
   .header .container{ max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
 
+  /* Лого с анимацией градиента */
   .logo{
+    will-change: transform;
     font-weight:900; font-size:26px; letter-spacing:.6px; line-height:1;
     background: linear-gradient(90deg, #eafff7 0%, #6bffb5 30%, #00ff88 50%, #9fffd8 70%, #eafff7 100%);
     background-size:200% auto;
@@ -35,6 +37,7 @@
     filter: drop-shadow(0 0 10px rgba(0,255,136,.35));
     animation: logoGlow 8s ease-in-out infinite;
     user-select:none;
+    transition: transform .08s linear;
   }
   @keyframes logoGlow{
     0%,100%{ background-position:0% 50%; filter: drop-shadow(0 0 8px rgba(0,255,136,.3)); }
@@ -42,13 +45,15 @@
   }
 
   .actions{ display:flex; align-items:center; gap:10px; }
-  .icon-btn{ width:40px; height:40px; border-radius:50%;
+  .icon-btn{
+    will-change: transform;
+    width:40px; height:40px; border-radius:50%;
     background: rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.25);
     box-shadow: 0 0 12px rgba(0,255,136,.35), 0 0 24px rgba(0,255,136,.15);
     display:inline-flex; align-items:center; justify-content:center; color:var(--green);
-    transition: transform .18s ease, box-shadow .2s ease, filter .2s ease; text-decoration:none; cursor:pointer;
+    transition: transform .08s linear, box-shadow .2s ease, filter .2s ease; text-decoration:none; cursor:pointer;
   }
-  .icon-btn:hover{ transform:scale(1.08); box-shadow:0 0 16px rgba(0,255,136,.8), 0 0 40px rgba(0,255,136,.35); }
+  .icon-btn:hover{ transform:translate(0,0) scale(1.08); box-shadow:0 0 16px rgba(0,255,136,.8), 0 0 40px rgba(0,255,136,.35); }
   .icon-btn:focus{ outline:none; box-shadow: 0 0 0 3px rgba(0,255,136,.35), 0 0 0 6px rgba(0,255,136,.2); }
 
   .hero{ position:relative; z-index:1; max-width:1200px; margin:40px auto 10px; padding:32px 22px 0; text-align:left; }
@@ -104,8 +109,10 @@
   .reveal.in{ opacity:1; transform:translateY(0); }
 
   @media (max-width:1024px){ .card{grid-column: span 6;} }
-  @media (max-width:640px){ .header{padding:16px} .hero{padding:24px 16px 0}
-    .section{padding:0 16px} .catalog{padding:0 16px; gap:14px} .card{grid-column:span 12} .btn{width:100%} .icon-btn{width:38px;height:38px}
+  @media (max-width:640px){
+    .header{padding:16px} .hero{padding:24px 16px 0}
+    .section{padding:0 16px} .catalog{padding:0 16px; gap:14px}
+    .card{grid-column:span 12} .btn{width:100%} .icon-btn{width:38px;height:38px}
   }
   @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
 </style>
@@ -116,10 +123,9 @@
 <div class="fluxe-site" id="fluxe">
   <header class="header reveal">
     <div class="container">
-      <div class="logo">fluxe</div>
+      <div class="logo" id="logo">fluxe</div>
       <div class="actions">
-        <!-- Обновлено: ссылка ведёт на новый сайт предложений -->
-        <a class="icon-btn" href="https://fluxe2400.github.io/" target="_blank" rel="noopener noreferrer" aria-label="Предложить игру или программу">
+        <a class="icon-btn" id="proposeBtn" href="https://fluxe240.github.io/game" target="_blank" rel="noopener noreferrer" aria-label="Предложить игру или программу">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h9"/>
             <path d="M16 3v6"/><path d="M13 6h6"/>
@@ -215,6 +221,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // Reveal-анимация
   const animated = document.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => { if(entry.isIntersecting){ entry.target.classList.add('in'); obs.unobserve(entry.target); } });
@@ -222,12 +229,12 @@ document.addEventListener('DOMContentLoaded', () => {
   animated.forEach(el => io.observe(el));
   setTimeout(() => document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('in')), 80);
 
+  // Снег (HiDPI)
   const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!prefersReduce){
     const c = document.getElementById('bg-snow');
     const ctx = c.getContext('2d');
     let flakes = [], raf=null;
-
     function setCanvasSize(){
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -260,6 +267,30 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', setCanvasSize);
     document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stop(); else start(); });
     start();
+  }
+
+  // Скролл-анимация: лого влево-вниз, кнопка вправо-вниз
+  const logo = document.getElementById('logo');
+  const propose = document.getElementById('proposeBtn');
+  let lastY = 0, ticking = false;
+  const maxX = 60, maxY = 40; // пределы смещения в px
+  function onScroll(){
+    lastY = window.scrollY || window.pageYOffset;
+    if(!ticking){ requestAnimationFrame(update); ticking = true; }
+  }
+  function update(){
+    const y = lastY;
+    const logoX = Math.min(maxX, y * 0.08);
+    const logoY = Math.min(maxY, y * 0.06);
+    const btnX  = Math.min(maxX, y * 0.08);
+    const btnY  = Math.min(maxY, y * 0.06);
+    logo.style.transform   = `translate(${-logoX}px, ${logoY}px)`;
+    propose.style.transform= `translate(${btnX}px, ${btnY}px)`;
+    ticking = false;
+  }
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    window.addEventListener('scroll', onScroll, { passive:true });
+    onScroll();
   }
 });
 </script>
