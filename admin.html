@@ -3,11 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>fluxe — игры и программы</title>
+<title>fluxe — админ</title>
 <meta name="theme-color" content="#07140e">
 <style>
   :root{ --bg:#07140e; --green:#00ff88; --text:#eaf9f1; --muted:#b6e3c8; }
-
   body{
     margin:0; color:var(--text);
     font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -18,216 +17,149 @@
   }
   #bg-snow{ position:fixed; inset:0; width:100vw; height:100vh; z-index:0; pointer-events:none; display:block; }
 
-  .fluxe-site{ position:relative; min-height:100vh; overflow:hidden; z-index:1; }
+  .wrap{ position:relative; z-index:1; max-width:1100px; margin:40px auto; padding:0 16px; }
+  .box{ background: rgba(5,18,12,.7); border:1px solid rgba(0,255,136,.2); border-radius:14px; padding:16px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+  h1{ margin:0 0 16px; font-size:28px; color:#bfffe1; text-shadow:0 0 12px rgba(0,255,136,.25); }
+  h2{ margin:14px 0 10px; font-size:18px; color:#bfffe1; }
+  label{ display:block; margin-bottom:6px; color:#cfeede; font-size:14px; }
+  input[type="text"], input[type="password"]{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(0,255,136,.2); background:#0f2219; color:#eaf9f1; outline:none;
+  }
+  select{
+    width:180px; padding:8px; border-radius:10px; border:1px solid rgba(0,255,136,.3);
+    background:#0f2219; color:#eaf9f1; outline:none; appearance:auto;
+  }
+  select option{ background:#0f2219; color:#eaf9f1; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 14px; border-radius:10px; background: linear-gradient(180deg, rgba(0,255,136,.95), rgba(0,230,120,.9)); color:#042d16; font-weight:800; border:none; cursor:pointer; }
+  .btn.secondary{ background: transparent; color:#bfffe1; border:1px solid rgba(0,255,136,.25); }
 
-  .header{ position:sticky; top:0; z-index:3; padding:22px;
-    backdrop-filter:blur(10px);
-    background: linear-gradient(180deg, rgba(7,20,14,.7), rgba(7,20,14,.3) 60%, transparent);
-    border-bottom:1px solid rgba(0,255,136,.15);
-  }
-  .header .container{ max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .row{ display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:end; }
+  #search{ width:min(320px, 100%); } /* короче первая строка поиска */
 
-  .logo{
-    font-weight:900; font-size:26px; letter-spacing:.6px; line-height:1;
-    background: linear-gradient(90deg, #eafff7 0%, #6bffb5 30%, #00ff88 50%, #9fffd8 70%, #eafff7 100%);
-    background-size:200% auto;
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    filter: drop-shadow(0 0 10px rgba(0,255,136,.35));
-    animation: logoGlow 8s ease-in-out infinite;
-    user-select:none;
+  .list{ display:grid; gap:10px; }
+  .item{ display:grid; gap:8px; padding:12px; border-radius:12px; border:1px solid rgba(0,255,136,.18); background: rgba(5,18,12,.6); }
+  .item .meta{ display:grid; grid-template-columns: 1fr 1fr; gap:6px; font-size:13px; color:#cfeede; }
+  .actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .status{ font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid rgba(0,255,136,.25); color:#bfffe1; background: rgba(0,255,136,.08); }
+  .muted{ color:#8acfb1; font-size:13px; }
+  .topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px; }
+  .right{ display:flex; align-items:center; gap:10px; }
+  .avatar{
+    width:40px; height:40px; border-radius:50%; overflow:hidden; border:1px solid rgba(0,255,136,.3);
+    box-shadow: 0 0 10px rgba(0,255,136,.3); background: rgba(0,255,136,.1);
   }
-  @keyframes logoGlow{
-    0%,100%{ background-position:0% 50%; filter: drop-shadow(0 0 8px rgba(0,255,136,.3)); }
-    50%{ background-position:100% 50%; filter: drop-shadow(0 0 14px rgba(0,255,136,.6)); }
-  }
+  .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .hidden{ display:none !important; }
+  .reveal{ opacity:0; transform: translateY(10px); transition: opacity .5s ease, transform .5s ease; }
+  .reveal.in{ opacity:1; transform:none; }
 
-  .actions{ display:flex; align-items:center; gap:10px; }
-  .icon-btn{ width:40px; height:40px; border-radius:50%;
-    background: rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.25);
-    box-shadow: 0 0 12px rgba(0,255,136,.35), 0 0 24px rgba(0,255,136,.15);
-    display:inline-flex; align-items:center; justify-content:center; color:var(--green);
-    transition: transform .18s ease, box-shadow .2s ease, filter .2s ease; text-decoration:none; cursor:pointer;
-  }
-  .icon-btn:hover{ transform:scale(1.08); box-shadow:0 0 16px rgba(0,255,136,.8), 0 0 40px rgba(0,255,136,.35); }
-  .icon-btn:focus{ outline:none; box-shadow: 0 0 0 3px rgba(0,255,136,.35), 0 0 0 6px rgba(0,255,136,.2); }
+  /* Табы */
+  .tabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .tab{ padding:8px 12px; border-radius:10px; border:1px solid rgba(0,255,136,.25); background: rgba(0,255,136,.08); color:#bfffe1; cursor:pointer; font-weight:700; }
+  .tab.active{ background: linear-gradient(180deg, rgba(0,255,136,.2), rgba(0,255,136,.12)); border-color: rgba(0,255,136,.45); }
 
-  .hero{ position:relative; z-index:1; max-width:1200px; margin:40px auto 10px; padding:32px 22px 0; text-align:left; }
-  .title{ font-size:clamp(28px, 4vw, 48px); line-height:1.1; margin:0; font-weight:900; letter-spacing:.2px;
-    background: linear-gradient(90deg, #eafff7, #a6ffd7 35%, #eafff7 70%);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    filter: drop-shadow(0 0 12px rgba(0,255,136,.25));
+  @media (max-width:640px){
+    .row{ grid-template-columns:1fr }
+    .item .meta{ grid-template-columns:1fr }
+    select{ width:100% }
+    #search{ width:100% }
   }
-
-  .section{ position:relative; z-index:1; max-width:1200px; margin:28px auto 8px; padding:0 22px; }
-  .section-title{
-    margin:22px 0 10px; font-size:22px; font-weight:900; letter-spacing:.4px; color:#cffff0;
-    text-shadow:0 0 10px rgba(0,255,136,.25);
-    display:inline-flex; align-items:center; gap:10px;
-  }
-  .section-title::after{
-    content:""; display:inline-block; width:70px; height:2px;
-    background: linear-gradient(90deg, rgba(0,255,136,.8), rgba(0,255,136,0));
-    border-radius:2px;
-  }
-
-  .catalog{ position:relative; z-index:1; max-width:1200px; margin:12px auto 46px; padding:0 22px;
-    display:grid; grid-template-columns: repeat(12, 1fr); gap:18px;
-  }
-  .card{ grid-column: span 4; display:flex; flex-direction:column;
-    background: linear-gradient(180deg, rgba(5,18,12,.8), rgba(5,18,12,.6));
-    border:1px solid rgba(0,255,136,.18); border-radius:16px; overflow:hidden;
-    box-shadow:0 8px 24px rgba(0,0,0,.35), 0 0 0 1px rgba(0,255,136,.08) inset;
-    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-  }
-  .card:hover{ transform: translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,.5), 0 0 30px rgba(0,255,136,.15); border-color: rgba(0,255,136,.35); }
-  .thumb{ position:relative; padding-top:58%; background-size:cover; background-position:center; filter:saturate(110%); }
-  .thumb::after{ content:""; position:absolute; inset:0; background: radial-gradient(60% 80% at 70% 10%, rgba(0,255,136,.18), transparent 60%); mix-blend-mode: screen; }
-  .card-body{ padding:16px; display:grid; gap:12px; }
-  .card-title{ font-size:20px; font-weight:800; margin:0; }
-  .meta{ display:flex; align-items:center; gap:8px; }
-  .badge{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-size:13px; font-weight:700; letter-spacing:.2px; background: rgba(0,255,136,.08); color:#bfffe1; border:1px solid rgba(0,255,136,.25); text-transform:uppercase; }
-  .badge.offline::before{ content:"•"; color:#ff6a6a; text-shadow: 0 0 8px rgba(255,90,90,.6); }
-
-  .btn{
-    display:inline-flex; justify-content:center; align-items:center; gap:10px; height:46px; padding:0 18px; border-radius:12px;
-    background: linear-gradient(180deg, rgba(0,255,136,.95), rgba(0,230,120,.9)); color:#042d16; font-weight:900; letter-spacing:.3px; text-decoration:none;
-    box-shadow: 0 0 0 2px rgba(0,255,136,.35) inset, 0 0 12px rgba(0,255,136,.7), 0 0 32px rgba(0,255,136,.35);
-    transition: transform .18s ease, box-shadow .2s ease, filter .2s ease;
-  }
-  .btn:hover{ transform: scale(1.045); box-shadow: 0 0 0 2px rgba(255,255,255,.55) inset, 0 0 16px rgba(0,255,136,.9), 0 0 44px rgba(0,255,136,.45); filter: brightness(1.03); }
-  .btn:active{ transform: scale(0.995); }
-  .btn:focus{ outline:none; box-shadow: 0 0 0 3px rgba(0,255,136,.35), 0 0 0 6px rgba(0,255,136,.2), 0 0 22px rgba(0,255,136,.7); }
-
-  .footer{ position:relative; z-index:1; color:var(--muted); text-align:center; padding:24px; border-top:1px solid rgba(0,255,136,.12); background: linear-gradient(180deg, rgba(5,18,12,.3), transparent); }
-
-  .reveal{ opacity:0; transform: translateY(14px); transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1); will-change:opacity,transform; }
-  .reveal.in{ opacity:1; transform:translateY(0); }
-
-  @media (max-width:1024px){ .card{grid-column: span 6;} }
-  @media (max-width:640px){ .header{padding:16px} .hero{padding:24px 16px 0}
-    .section{padding:0 16px} .catalog{padding:0 16px; gap:14px} .card{grid-column:span 12} .btn{width:100%} .icon-btn{width:38px;height:38px}
-  }
-  @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
 </style>
 </head>
 <body>
 <canvas id="bg-snow" aria-hidden="true"></canvas>
 
-<div class="fluxe-site" id="fluxe">
-  <header class="header reveal">
-    <div class="container">
-      <div class="logo">fluxe</div>
-      <div class="actions">
-        <!-- Обновлено: ссылка ведёт на новый сайт предложений -->
-        <a class="icon-btn" href="https://fluxe2400.github.io/" target="_blank" rel="noopener noreferrer" aria-label="Предложить игру или программу">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h9"/>
-            <path d="M16 3v6"/><path d="M13 6h6"/>
-          </svg>
-        </a>
+<div class="wrap">
+  <div class="box reveal" id="loginBox">
+    <div class="topbar">
+      <h1>Вход в админ-панель</h1>
+      <div class="right">
+        <div class="avatar" title="Аватар админа">
+          <img id="avatarImg" alt="avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='100%' height='100%' fill='%230a1f17'/><text x='50%' y='55%' font-size='34' fill='%2300ff88' text-anchor='middle' font-family='Arial'>&#128272;</text></svg>">
+        </div>
+        <input type="file" id="avatarInput" accept="image/*" class="hidden">
+        <button class="btn secondary" id="changeAvatar">Сменить аватар</button>
       </div>
     </div>
-  </header>
-
-  <section class="hero">
-    <h1 class="title reveal">Скачивайте игры и программы в один клик</h1>
-  </section>
-
-  <!-- Раздел Игры -->
-  <div class="section">
-    <h2 class="section-title reveal">Игры</h2>
+    <label for="login">Логин</label>
+    <input type="text" id="login" placeholder="support_pelemeuu">
+    <label for="pass" style="margin-top:10px;">Пароль</label>
+    <input type="password" id="pass" placeholder="Пароль">
+    <div style="margin-top:12px; display:flex; gap:8px;">
+      <button class="btn" id="doLogin">Войти</button>
+      <span class="muted">Логин: support_pelemeuu</span>
+    </div>
   </div>
-  <section class="catalog" aria-label="Список игр">
-    <article class="card reveal">
-      <div class="thumb" style="background-image:url('https://buckshotroulette.com//data/image/game/buckshot-roulette-feature-image.jpg');"></div>
-      <div class="card-body">
-        <h3 class="card-title">Buckshot Roulette</h3>
-        <div class="meta"><span class="badge offline">Онлайн: нет</span></div>
-        <a class="btn reveal" href="https://gclnk.com/QBQF7Hs7" target="_blank" rel="noopener nofollow">Скачать</a>
-      </div>
-    </article>
 
-    <article class="card reveal">
-      <div class="thumb" style="background-image:url('https://f4.bcbits.com/img/a0084845941_16.jpg');"></div>
-      <div class="card-body">
-        <h3 class="card-title">ULTRAKILL</h3>
-        <div class="meta"><span class="badge offline">Онлайн: нет</span></div>
-        <a class="btn reveal" href="https://gclnk.com/Z2LbFZ5I" target="_blank" rel="noopener nofollow">Скачать</a>
-      </div>
-    </article>
-
-    <article class="card reveal">
-      <div class="thumb" style="background-image:url('https://itorrents-igruha.org/uploads/posts/2023-01/1672795576_cover.jpg');"></div>
-      <div class="card-body">
-        <h3 class="card-title">Hotline Miami</h3>
-        <div class="meta"><span class="badge offline">Онлайн: нет</span></div>
-        <a class="btn reveal" href="https://gclnk.com/Begimb3E" target="_blank" rel="noopener nofollow">Скачать</a>
-      </div>
-    </article>
-
-    <article class="card reveal">
-      <div class="thumb" style="background-image:url('https://i.playground.ru/e/HB-5Xo_DO35lX0_FVIlIHQ.jpeg?600-600');"></div>
-      <div class="card-body">
-        <h3 class="card-title">ленивая принцесса-монстр не хочет работать</h3>
-        <div class="meta"><span class="badge offline">Онлайн: нет</span></div>
-        <a class="btn reveal" href="https://gclnk.com/dz9HjWf0" target="_blank" rel="noopener nofollow">Скачать</a>
-      </div>
-    </article>
-  </section>
-
-  <!-- Раздел Программы -->
-  <div class="section">
-    <h2 class="section-title reveal">Программы</h2>
+  <!-- Табы после входа -->
+  <div class="box hidden reveal" id="tabsBox">
+    <div class="tabs">
+      <button class="tab active" id="tabApps">Заявки</button>
+      <button class="tab" id="tabHistory">История</button>
+    </div>
   </div>
-  <section class="catalog" aria-label="Список программ">
-    <article class="card reveal">
-      <div class="thumb" style="background-image:url('https://play-lh.googleusercontent.com/MumkEpSL7dj16Rt_JfqgKPmMhaWlBhQN5HD2sxNpCgKhUEiIkfcktW_pllWM3wfKeQ=w240-h480-rw');"></div>
-      <div class="card-body">
-        <h3 class="card-title">Wallpaper Engine</h3>
-        <div class="meta"><span class="badge offline">Онлайн: нет</span></div>
-        <a class="btn reveal" href="https://gclnk.com/6eLkU5oB" target="_blank" rel="noopener nofollow">Скачать</a>
-      </div>
-    </article>
 
-    <article class="card reveal">
-      <div class="thumb" style="background-image:url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjW67tvI9LKr21QJeNObg14_cKP0T4cWzaTQ&s');"></div>
-      <div class="card-body">
-        <h3 class="card-title">Steam Tools</h3>
-        <div class="meta"><span class="badge offline">Онлайн: нет</span></div>
-        <a class="btn reveal" href="https://gclnk.com/bJpD5QJb" target="_blank" rel="noopener nofollow">Скачать</a>
+  <div class="box hidden reveal" id="appBox">
+    <div class="topbar">
+      <h1>Заявки</h1>
+      <div class="right">
+        <div class="avatar" title="Аватар админа">
+          <img id="avatarImg2" alt="avatar">
+        </div>
+        <input type="file" id="avatarInput2" accept="image/*" class="hidden">
+        <button class="btn secondary" id="changeAvatar2">Сменить аватар</button>
+        <button class="btn secondary" id="logout">Выйти</button>
+        <button class="btn secondary" id="clearAll">Очистить заявки</button>
       </div>
-    </article>
+    </div>
 
-    <article class="card reveal">
-      <div class="thumb" style="background-image:url('https://images.steamusercontent.com/ugc/27690528766895719/C9F2DBAF5000D1D391A110B374EFFBDA4B6C9099/?imw=200&imh=200&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true');"></div>
-      <div class="card-body">
-        <h3 class="card-title">Soundpad</h3>
-        <div class="meta"><span class="badge offline">Онлайн: нет</span></div>
-        <a class="btn reveal" href="https://gclnk.com/gujcrtn0" target="_blank" rel="noopener nofollow">Скачать</a>
+    <div class="row">
+      <div>
+        <label>Поиск</label>
+        <input type="text" id="search" placeholder="Поиск по нику или названию">
       </div>
-    </article>
-  </section>
+      <div>
+        <label>Фильтр</label>
+        <select id="filter">
+          <option value="all">Все</option>
+          <option value="pending">Ожидают</option>
+          <option value="approved">Одобрены</option>
+          <option value="rejected">Отклонены</option>
+        </select>
+      </div>
+    </div>
 
-  <footer class="footer reveal">
-    <small>by pelemeuu</small>
-  </footer>
+    <h2 style="margin-top:16px;">Список заявок</h2>
+    <div class="list" id="list"></div>
+    <div class="muted" id="empty">Пока пусто.</div>
+  </div>
+
+  <div class="box hidden reveal" id="historyBox">
+    <div class="topbar">
+      <h1>История действий</h1>
+      <div class="right">
+        <input type="text" id="histSearch" placeholder="Поиск в истории" style="padding:8px 10px; border-radius:10px; border:1px solid rgba(0,255,136,.2); background:#0f2219; color:#eaf9f1;">
+        <!-- Кнопка очистки истории удалена -->
+      </div>
+    </div>
+    <div class="list" id="histList"></div>
+    <div class="muted" id="histEmpty">История пуста.</div>
+  </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+  // Анимации появления
   const animated = document.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries, obs) => {
-    entries.forEach(entry => { if(entry.isIntersecting){ entry.target.classList.add('in'); obs.unobserve(entry.target); } });
-  }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
-  animated.forEach(el => io.observe(el));
-  setTimeout(() => document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('in')), 80);
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } });
+  }, { threshold: .1 }); animated.forEach(el => io.observe(el));
 
-  const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(!prefersReduce){
+  // Снег (фон)
+  (function snow(){
+    const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(prefersReduce) return;
     const c = document.getElementById('bg-snow');
-    const ctx = c.getContext('2d');
-    let flakes = [], raf=null;
-
+    const ctx = c.getContext('2d'); let flakes=[], raf=null;
     function setCanvasSize(){
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -260,8 +192,257 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', setCanvasSize);
     document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stop(); else start(); });
     start();
+  })();
+
+  // Авторизация
+  const CRED = {
+    login: 'support_pelemeuu',
+    pass: '9358gj37&HIUYegs8u84hgY&Hugr87w4hudgj%UgnjdshgYUghsj4njefguydhGUSRIHGUSDH47wyudgf'
+  };
+  const loginBox = document.getElementById('loginBox');
+  const tabsBox = document.getElementById('tabsBox');
+  const appBox = document.getElementById('appBox');
+  const historyBox = document.getElementById('historyBox');
+  const doLogin = document.getElementById('doLogin');
+  const logout = document.getElementById('logout');
+
+  // Табы
+  const tabApps = document.getElementById('tabApps');
+  const tabHistory = document.getElementById('tabHistory');
+  function showTab(name){
+    if(name==='apps'){
+      appBox.classList.remove('hidden'); historyBox.classList.add('hidden');
+      tabApps.classList.add('active'); tabHistory.classList.remove('active');
+    }else{
+      appBox.classList.add('hidden'); historyBox.classList.remove('hidden');
+      tabHistory.classList.add('active'); tabApps.classList.remove('active');
+    }
   }
-});
+  tabApps.addEventListener('click', ()=>showTab('apps'));
+  tabHistory.addEventListener('click', ()=>showTab('history'));
+
+  // Аватар
+  const avatarImg = document.getElementById('avatarImg');
+  const avatarImg2 = document.getElementById('avatarImg2');
+  const avatarInput = document.getElementById('avatarInput');
+  const avatarInput2 = document.getElementById('avatarInput2');
+  const changeAvatar = document.getElementById('changeAvatar');
+  const changeAvatar2 = document.getElementById('changeAvatar2');
+
+  function loadAvatar(){
+    const src = localStorage.getItem('fluxeAdminAvatar');
+    if(src){ avatarImg.src = src; avatarImg2.src = src; }
+    else { avatarImg2.src = avatarImg.src; }
+  }
+  function chooseAvatar(input){
+    input.click();
+    input.onchange = async () => {
+      const file = input.files && input.files[0];
+      if(!file) return;
+      const dataUrl = await fileToDataURL(file);
+      const resized = await resizeImage(dataUrl, 128);
+      localStorage.setItem('fluxeAdminAvatar', resized);
+      loadAvatar();
+    };
+  }
+  function fileToDataURL(file){ return new Promise(res=>{ const fr = new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(file); }); }
+  function resizeImage(src, size){ return new Promise(res=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'); c.width=size; c.height=size; const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,size,size); res(c.toDataURL('image/webp',0.9)); }; img.src=src; }); }
+  changeAvatar.addEventListener('click', ()=>chooseAvatar(avatarInput));
+  changeAvatar2.addEventListener('click', ()=>chooseAvatar(avatarInput2));
+  loadAvatar();
+
+  // База заявок
+  const listEl = document.getElementById('list');
+  const emptyEl = document.getElementById('empty');
+  const clearBtn = document.getElementById('clearAll');
+  const searchEl = document.getElementById('search');
+  const filterEl = document.getElementById('filter');
+
+  function getDb(){
+    try{ return JSON.parse(localStorage.getItem('fluxeApplications')) || []; }
+    catch(e){ return []; }
+  }
+  function setDb(data){ localStorage.setItem('fluxeApplications', JSON.stringify(data)); }
+  function addApp(app){ const db=getDb(); db.unshift(app); setDb(db); render(); }
+  function updateStatus(id, status, reason){
+    const db = getDb().map(a => a.id===id ? {...a, status, reason: status==='rejected' ? (reason||'') : a.reason} : a);
+    setDb(db);
+    const app = db.find(a=>a.id===id);
+    if(status==='approved') addLog('approved', app);
+    if(status==='rejected') addLog('rejected', app, reason||'');
+    render();
+  }
+  function removeApp(id){
+    const db = getDb();
+    const app = db.find(a=>a.id===id);
+    const rest = db.filter(a => a.id!==id);
+    setDb(rest);
+    if(app) addLog('removed', app);
+    render();
+  }
+
+  // История
+  const histList = document.getElementById('histList');
+  const histEmpty = document.getElementById('histEmpty');
+  const histSearch = document.getElementById('histSearch');
+
+  function getHistory(){
+    try{ return JSON.parse(localStorage.getItem('fluxeHistory')) || []; }
+    catch(e){ return []; }
+  }
+  function setHistory(arr){ localStorage.setItem('fluxeHistory', JSON.stringify(arr)); }
+  function addLog(action, app, reason){
+    const rec = {
+      id: 'log_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+      action, appId: app.id, title: app.title, nick: app.nick,
+      reason: reason || '', ts: Date.now()
+    };
+    const log = getHistory(); log.unshift(rec); setHistory(log); renderHistory();
+  }
+  function renderHistory(){
+    const q = (histSearch.value||'').toLowerCase().trim();
+    const log = getHistory().filter(l => {
+      const s = [l.action, l.title, l.nick, l.reason].join(' ').toLowerCase();
+      return s.includes(q);
+    });
+    histList.innerHTML = '';
+    if(log.length===0){ histEmpty.style.display='block'; return; }
+    histEmpty.style.display='none';
+    for(const l of log){
+      const div = document.createElement('div');
+      div.className = 'item';
+      const actionText = l.action==='submitted'?'Создана': l.action==='approved'?'Одобрена': l.action==='rejected'?'Отклонена':'Удалена';
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>${escapeHtml(l.title)}</strong>
+          <span class="status">${actionText}</span>
+        </div>
+        <div class="meta">
+          <div><b>Ник:</b> ${escapeHtml(l.nick)}</div>
+          <div><b>Время:</b> ${new Date(l.ts).toLocaleString()}</div>
+          ${l.reason ? `<div style="grid-column:1/-1;"><b>Причина:</b> ${escapeHtml(l.reason)}</div>` : ''}
+        </div>
+      `;
+      histList.appendChild(div);
+    }
+  }
+  histSearch.addEventListener('input', renderHistory);
+
+  // Рендер заявок
+  function render(){
+    const q = (searchEl.value||'').toLowerCase().trim();
+    const f = filterEl.value;
+    const data = getDb().filter(a => {
+      const matches = a.nick.toLowerCase().includes(q) || a.title.toLowerCase().includes(q);
+      const statusOk = f==='all' ? true : a.status===f;
+      return matches && statusOk;
+    });
+
+    listEl.innerHTML = '';
+    if(data.length===0){ emptyEl.style.display='block'; return; }
+    emptyEl.style.display='none';
+
+    data.forEach(a => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const statusText = a.status==='pending'?'Ожидает': a.status==='approved'?'Одобрена':'Отклонена';
+      item.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>${escapeHtml(a.title)}</strong>
+          <span class="status">${statusText}</span>
+        </div>
+        <div class="meta">
+          <div><b>Ник:</b> ${escapeHtml(a.nick)}</div>
+          <div><b>Время:</b> ${new Date(a.ts).toLocaleString()}</div>
+          <div style="grid-column:1 / -1; word-break:break-all;"><b>VirusTotal:</b> <a href="${a.virustotal}" target="_blank" rel="noopener noreferrer">${a.virustotal}</a></div>
+          <div style="grid-column:1 / -1; word-break:break-all;"><b>Ссылка:</b> <a href="${a.link}" target="_blank" rel="noopener noreferrer">${a.link}</a></div>
+          ${a.status==='rejected' && a.reason ? `<div style="grid-column:1/-1;"><b>Причина отклонения:</b> ${escapeHtml(a.reason)}</div>` : ''}
+        </div>
+        <div class="actions">
+          <button class="btn" data-act="approve">Одобрить</button>
+          <button class="btn secondary" data-act="reject">Отклонить</button>
+          <button class="btn secondary" data-act="remove">Удалить</button>
+        </div>
+      `;
+      item.querySelector('[data-act="approve"]').addEventListener('click', () => updateStatus(a.id,'approved'));
+      item.querySelector('[data-act="reject"]').addEventListener('click', () => {
+        const reason = prompt('Укажите причину отклонения:','');
+        if(reason===null) return; // отмена
+        updateStatus(a.id,'rejected', reason.trim());
+      });
+      item.querySelector('[data-act="remove"]').addEventListener('click', () => {
+        if(confirm('Удалить заявку?')) removeApp(a.id);
+      });
+      listEl.appendChild(item);
+    });
+  }
+
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  // Логирование отправленных заявок из submit.html
+  function syncSubmittedLogs(){
+    const apps = getDb();
+    const known = new Set((JSON.parse(localStorage.getItem('fluxeKnownIds')) || []));
+    const newOnes = apps.filter(a => !known.has(a.id));
+    if(newOnes.length){
+      newOnes.forEach(a => addLog('submitted', a));
+      const updated = [...known, ...newOnes.map(a=>a.id)];
+      localStorage.setItem('fluxeKnownIds', JSON.stringify(updated));
+    }
+  }
+  window.addEventListener('storage', (e) => {
+    if(e.key === 'fluxeApplications'){ syncSubmittedLogs(); render(); }
+  });
+
+  // Очистить все заявки
+  clearBtn.addEventListener('click', () => {
+    if(confirm('Очистить все заявки?')){
+      localStorage.removeItem('fluxeApplications');
+      localStorage.removeItem('fluxeKnownIds');
+      render();
+    }
+  });
+
+  // Поиск/фильтр
+  searchEl.addEventListener('input', render);
+  filterEl.addEventListener('change', render);
+
+  // Логин/логаут
+  doLogin.addEventListener('click', login);
+  function login(){
+    const user = document.getElementById('login').value.trim();
+    const pass = document.getElementById('pass').value;
+    if(user === CRED.login && pass === CRED.pass){
+      localStorage.setItem('fluxeAdminToken','ok');
+      loginBox.classList.add('hidden');
+      tabsBox.classList.remove('hidden');
+      appBox.classList.remove('hidden');
+      historyBox.classList.add('hidden');
+      syncSubmittedLogs();
+      render();
+      renderHistory();
+    }else{
+      alert('Неверный логин или пароль');
+    }
+  }
+  logout.addEventListener('click', () => {
+    localStorage.removeItem('fluxeAdminToken');
+    tabsBox.classList.add('hidden');
+    loginBox.classList.remove('hidden');
+    appBox.classList.add('hidden');
+    historyBox.classList.add('hidden');
+  });
+
+  // Автовход
+  if(localStorage.getItem('fluxeAdminToken')==='ok'){
+    loginBox.classList.add('hidden');
+    tabsBox.classList.remove('hidden');
+    appBox.classList.remove('hidden');
+    historyBox.classList.add('hidden');
+    syncSubmittedLogs();
+    render();
+    renderHistory();
+  }
 </script>
 </body>
 </html>
