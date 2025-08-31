@@ -272,12 +272,14 @@ document.addEventListener('DOMContentLoaded', () => {
     start();
   }
 
-  // Скролл-анимация: логотип влево-вниз, кнопка вправо-вниз (смещение по X и Y)
+  // Скролл-анимация: логотип влево-вниз, кнопка вправо-вниз (смещение по X и Y без ограничения по Y)
   const logo = document.getElementById('logo');
   const propose = document.getElementById('proposeBtn');
   let lastY = 0, ticking = false;
-  const maxX = 120; // максимальный сдвиг по X
-  const maxY = 90;  // максимальный сдвиг по Y
+
+  // Коэффициенты смещения: подбери под себя
+  const coefX = 0.20; // чем больше, тем сильнее уходит вбок
+  const coefY = 0.20; // чем больше, тем сильнее уходит вниз
 
   function onScroll(){
     lastY = window.scrollY || document.documentElement.scrollTop || 0;
@@ -288,8 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function applyShift(){
     const y = lastY;
-    const xShift = Math.min(maxX, y * 0.20); // боковое смещение
-    const yShift = Math.min(maxY, y * 0.15); // вертикальное смещение
+    const xShift = y * coefX;
+    const yShift = y * coefY;
 
     // Лого — влево и вниз
     logo.style.transform = `translate3d(${-xShift}px, ${yShift}px, 0)`;
