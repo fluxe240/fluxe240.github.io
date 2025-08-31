@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>fluxe — предложить игру/программу</title>
 <meta name="theme-color" content="#07140e">
 <style>
@@ -14,6 +14,7 @@
       radial-gradient(1200px 800px at 10% -10%, #0b2a1c 0%, var(--bg) 40%),
       radial-gradient(1000px 700px at 110% 10%, #0c3a25 0%, var(--bg) 30%),
       var(--bg);
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
   }
   #bg-snow{ position:fixed; inset:0; width:100vw; height:100vh; z-index:0; pointer-events:none; display:block; }
 
@@ -34,32 +35,43 @@
     0%,100%{ background-position:0% 50%; filter: drop-shadow(0 0 8px rgba(0,255,136,.3)); }
     50%{ background-position:100% 50%; filter: drop-shadow(0 0 14px rgba(0,255,136,.6)); }
   }
-  .icon-btn{ width:40px; height:40px; border-radius:50%; background: rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.25); box-shadow: 0 0 12px rgba(0,255,136,.35), 0 0 24px rgba(0,255,136,.15); display:inline-flex; align-items:center; justify-content:center; color:var(--green); text-decoration:none; }
+  .icon-btn{ width:44px; height:44px; border-radius:50%; background: rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.25); box-shadow: 0 0 12px rgba(0,255,136,.35), 0 0 24px rgba(0,255,136,.15); display:inline-flex; align-items:center; justify-content:center; color:var(--green); text-decoration:none; touch-action: manipulation; }
 
   .title{ margin:0 0 14px; font-size:26px; font-weight:900; color:#bfffe1; text-shadow:0 0 12px rgba(0,255,136,.25); }
   label{ display:block; margin:10px 0 6px; color:#cfeede; font-size:14px; }
-  input[type="text"], input[type="url"]{
+  input[type="text"], input[type="url"], input[type="number"]{
     width:100%; padding:12px 12px; border-radius:12px; border:1px solid rgba(0,255,136,.25);
-    background:rgba(0,255,136,.06); color:#eaf9f1; outline:none;
+    background:rgba(0,255,136,.06); color:#eaf9f1; outline:none; font-size:16px;
   }
   .row{ display:grid; gap:10px; }
 
-  /* Капча */
-  .captcha{ display:grid; grid-template-columns: 1fr auto; align-items:end; gap:10px; margin-top:6px; }
-  .captcha-box{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,255,136,.25); background:rgba(0,255,136,.06); }
-  .captcha-q{ font-weight:800; color:#bfffe1; letter-spacing:.3px; }
-  .cap-field{ width:120px; }
-  .cap-refresh{ height:40px; border-radius:10px; padding:0 12px; border:1px solid rgba(0,255,136,.25); background:transparent; color:#bfffe1; cursor:pointer; }
+  /* Капча v2 */
+  .captcha-block{ display:grid; gap:10px; margin-top:6px; }
+  .cap-human{ display:flex; align-items:center; gap:10px; }
+  .cap-human input{ width:20px; height:20px; }
+  .cap-wrap{ display:grid; grid-template-columns: 1fr auto; align-items:end; gap:10px; }
+  .cap-box{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,255,136,.25); background:rgba(0,255,136,.06); }
+  .cap-q{ font-weight:800; color:#bfffe1; letter-spacing:.3px; }
+  .cap-field{ width:140px; }
+  .cap-refresh{ height:44px; border-radius:10px; padding:0 12px; border:1px solid rgba(0,255,136,.25); background:transparent; color:#bfffe1; cursor:pointer; touch-action: manipulation; }
+  .cap-note{ font-size:12px; color:#8acfb1; }
 
   .actions{ display:flex; gap:8px; margin-top:14px; }
-  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 16px; border-radius:12px;
-    background: linear-gradient(180deg, rgba(0,255,136,.95), rgba(0,230,120,.9)); color:#042d16; font-weight:800; border:none; cursor:pointer; }
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; height:48px; padding:0 16px; border-radius:12px;
+    background: linear-gradient(180deg, rgba(0,255,136,.95), rgba(0,230,120,.9)); color:#042d16; font-weight:800; border:none; cursor:pointer; touch-action: manipulation; font-size:16px; }
   .btn.secondary{ background: transparent; color:#bfffe1; border:1px solid rgba(0,255,136,.25); }
 
   .ok{ padding:12px; border-radius:12px; background:rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.3); color:#bfffe1; margin-top:12px; transition: opacity .3s ease; }
 
   .reveal{ opacity:0; transform: translateY(12px); transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1); }
   .reveal.in{ opacity:1; transform:none; }
+
+  /* Мобайл/таблет */
+  @media (max-width:768px){
+    .wrap{padding:0 14px}
+    .btn{width:100%}
+    .cap-field{width:120px}
+  }
 </style>
 </head>
 <body>
@@ -93,20 +105,31 @@
         <input type="url" id="link" required placeholder="https://..." inputmode="url">
       </div>
 
-      <!-- Капча -->
-      <div>
-        <label>Подтвердите, что вы не робот</label>
-        <div class="captcha">
-          <div class="captcha-box">
-            <span class="captcha-q" id="capQ">2 + 3 = ?</span>
-            <input class="cap-field" type="text" id="capA" inputmode="numeric" placeholder="Ответ" required>
+      <!-- Капча v2 -->
+      <div class="captcha-block">
+        <div class="cap-human">
+          <input type="checkbox" id="capHuman">
+          <label for="capHuman">Я человек</label>
+        </div>
+
+        <div id="capChallenge" class="cap-wrap" style="display:none;">
+          <div class="cap-box">
+            <span class="cap-q" id="capQ">(2 + 3) × 2 = ?</span>
+            <input class="cap-field" type="number" id="capA" inputmode="numeric" placeholder="Ответ" aria-label="Ответ на пример">
           </div>
           <button type="button" class="cap-refresh" id="capR">Обновить</button>
+          <div class="cap-note" style="grid-column:1/-1;">Подождите 2 секунды и решите пример.</div>
+        </div>
+
+        <!-- антибот-поле (honeypot) -->
+        <div style="position:absolute; left:-5000px; top:auto; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+          <label>Оставьте пустым</label>
+          <input type="text" id="hp_field" tabindex="-1" autocomplete="off">
         </div>
       </div>
 
       <div class="actions">
-        <button class="btn" type="submit">Отправить</button>
+        <button class="btn" type="submit" id="submitBtn" disabled>Отправить</button>
         <button class="btn secondary" type="reset" id="resetBtn">Сброс</button>
       </div>
 
@@ -124,12 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { threshold: .1 });
   animated.forEach(el => io.observe(el));
 
-  // Снег
+  // Снег с мобильной плотностью
   const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!prefersReduce){
     const c = document.getElementById('bg-snow');
     const ctx = c.getContext('2d');
     let flakes = [], raf=null;
+    function densityFactor(){ return window.matchMedia('(max-width: 768px)').matches ? 0.00007 : 0.00012; }
     function setCanvasSize(){
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -141,30 +165,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function makeFlake(w,h){ return { x:Math.random()*w, y:Math.random()*h, r:1+Math.random()*2.2, s:.4+Math.random()*1.2, d:Math.random()*1.5 }; }
     function adjustFlakes(w,h){
-      const target = Math.floor(w*h*0.00012);
+      const target = Math.floor(w*h*densityFactor());
       if(flakes.length===0){ flakes = new Array(target).fill(0).map(()=>makeFlake(w,h)); return; }
       if(flakes.length<target){ for(let i=flakes.length;i<target;i++) flakes.push(makeFlake(w,h)); }
       else if(flakes.length>target){ flakes.length = target; }
     }
     function step(){
-      const w = c.clientWidth, h = c.clientHeight;
+      const w=c.clientWidth,h=c.clientHeight;
       ctx.clearRect(0,0,w,h);
-      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      ctx.fillStyle='rgba(255,255,255,.9)';
       for(const f of flakes){
-        f.y += f.s; f.x += Math.sin((f.y+f.d)*0.01)*0.6;
-        if(f.y > h+5){ f.y = -10; f.x = Math.random()*w; }
-        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2); ctx.fill();
+        f.y+=f.s; f.x += Math.sin((f.y+f.d)*0.01)*0.6;
+        if(f.y>h+5){ f.y=-10; f.x=Math.random()*w; }
+        ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
       }
-      raf = requestAnimationFrame(step);
+      raf=requestAnimationFrame(step);
     }
-    function start(){ if(raf) return; setCanvasSize(); raf = requestAnimationFrame(step); }
-    function stop(){ if(raf){ cancelAnimationFrame(raf); raf = null; } }
-    window.addEventListener('resize', setCanvasSize);
-    document.addEventListener('visibilitychange', () => { if(document.hidden) stop(); else start(); });
+    function start(){ if(raf) return; setCanvasSize(); raf=requestAnimationFrame(step); }
+    function stop(){ if(raf){ cancelAnimationFrame(raf); raf=null; } }
+    window.addEventListener('resize', setCanvasSize, {passive:true});
+    document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stop(); else start(); });
     start();
   }
 
-  // Рандомный ник в placeholder
+  // Рандомный ник
   const nick = document.getElementById('nick');
   function randomNick(){
     const adj = ['Neo','Iron','Dark','Hyper','Aqua','Crimson','Pixel','Shadow','Ghost','Omega','Cyber','Glitch','Turbo'];
@@ -174,22 +198,64 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   nick.placeholder = `например, (${randomNick()})`;
 
-  // Капча
+  // Капча v2 (чекбокс + выражение с приоритетами + антиспам по времени)
+  const capHuman = document.getElementById('capHuman');
+  const capChallenge = document.getElementById('capChallenge');
   const capQ = document.getElementById('capQ');
   const capA = document.getElementById('capA');
   const capR = document.getElementById('capR');
-  let capSum = 0;
-  function genCap(){
-    const a = Math.floor(2 + Math.random()*8);
-    const b = Math.floor(2 + Math.random()*8);
-    capSum = a + b;
-    capQ.textContent = `${a} + ${b} = ?`;
-    capA.value = '';
-  }
-  capR.addEventListener('click', genCap);
-  genCap();
+  const hp = document.getElementById('hp_field');
+  const submitBtn = document.getElementById('submitBtn');
 
-  // Отправка (LocalStorage общего домена)
+  let expected = 0;
+  let unlockAt = 0;
+  let solved = false;
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function genExpr(){
+    // Паттерны со скобками/умножением
+    const pattern = randInt(1,3);
+    let a=randInt(2,9), b=randInt(2,9), c=randInt(1,8), d=randInt(1,8);
+    // гарантируем неотрицательность (для удобства)
+    if(c<d){ const t=c; c=d; d=t; }
+    let text = '', val = 0;
+    if(pattern===1){
+      // a + b × (c - d)
+      text = `${a} + ${b} × (${c} - ${d})`;
+      val = a + b * (c - d);
+    }else if(pattern===2){
+      // (a + b) × c - d
+      text = `(${a} + ${b}) × ${c} - ${d}`;
+      val = (a + b) * c - d;
+    }else{
+      // a × (b + c) - d
+      text = `${a} × (${b} + ${c}) - ${d}`;
+      val = a * (b + c) - d;
+    }
+    // если вышло отрицательно — перегенерация
+    if(val < 0){ return genExpr(); }
+    expected = val;
+    capQ.textContent = text + ' = ?';
+    capA.value = '';
+    solved = false;
+    unlockAt = Date.now() + 2000; // антиспам по времени (2 сек)
+  }
+
+  capHuman.addEventListener('change', () => {
+    capChallenge.style.display = capHuman.checked ? 'grid' : 'none';
+    submitBtn.disabled = true;
+    if(capHuman.checked){ genExpr(); }
+  });
+  capR.addEventListener('click', () => { genExpr(); submitBtn.disabled = true; capA.focus(); });
+  capA.addEventListener('input', () => {
+    const v = parseInt(capA.value,10);
+    if(!Number.isFinite(v)) { submitBtn.disabled = true; solved=false; return; }
+    if(Date.now() < unlockAt){ submitBtn.disabled = true; solved=false; return; }
+    solved = (v === expected);
+    submitBtn.disabled = !solved;
+  });
+
+  // Отправка
   const form = document.getElementById('appForm');
   const res = document.getElementById('result');
   const resetBtn = document.getElementById('resetBtn');
@@ -201,10 +267,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const link = document.getElementById('link').value.trim();
     const nickVal = nick.value.trim();
 
+    if(hp.value){ alert('Ошибка проверки.'); return; } // бот
+    if(!capHuman.checked || !solved){ alert('Подтвердите капчу.'); return; }
+
     if(!nickVal || !title || !vt || !link){ alert('Заполните все поля.'); return; }
     if(!/^https?:\/\//i.test(vt) || vt.indexOf('virustotal.com')===-1){ alert('Укажите корректную ссылку на VirusTotal.'); return; }
     if(!/^https?:\/\//i.test(link)){ alert('Укажите корректную ссылку на скачивание.'); return; }
-    if(parseInt(capA.value,10) !== capSum){ alert('Неверная капча.'); genCap(); capA.focus(); return; }
 
     const app = { id: 'app_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
                   nick: nickVal, title, virustotal: vt, link, status: 'pending', ts: Date.now() };
@@ -217,14 +285,20 @@ document.addEventListener('DOMContentLoaded', () => {
     res.textContent = 'Заявка отправлена!';
     res.style.display = 'block';
     form.reset();
-    genCap();
+    capChallenge.style.display = 'none';
+    capHuman.checked = false;
+    submitBtn.disabled = true;
 
     // Скрыть через 7 сек
     setTimeout(() => { res.style.opacity = '0'; }, 6500);
     setTimeout(() => { res.style.display = 'none'; res.textContent=''; res.style.opacity=''; }, 7000);
   });
 
-  resetBtn.addEventListener('click', genCap);
+  resetBtn.addEventListener('click', () => {
+    capChallenge.style.display = 'none';
+    capHuman.checked = false;
+    submitBtn.disabled = true;
+  });
 });
 </script>
 </body>
