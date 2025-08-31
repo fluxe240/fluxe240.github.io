@@ -15,14 +15,12 @@
       radial-gradient(1000px 700px at 110% 10%, #0c3a25 0%, var(--bg) 30%),
       var(--bg);
   }
-
   #bg-snow{ position:fixed; inset:0; width:100vw; height:100vh; z-index:0; pointer-events:none; display:block; }
 
   .wrap{ position:relative; z-index:1; max-width:720px; margin:40px auto; padding:0 16px; }
   .box{ background: rgba(5,18,12,.8); border:1px solid rgba(0,255,136,.25); border-radius:16px; padding:18px; box-shadow:0 8px 24px rgba(0,0,0,.35); }
-
-  /* Обновлённый дизайн логотипа fluxe */
   .header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+
   .logo{
     font-weight:900; font-size:24px; letter-spacing:.6px; line-height:1;
     background: linear-gradient(90deg, #eafff7 0%, #6bffb5 30%, #00ff88 50%, #9fffd8 70%, #eafff7 100%);
@@ -36,7 +34,6 @@
     0%,100%{ background-position:0% 50%; filter: drop-shadow(0 0 8px rgba(0,255,136,.3)); }
     50%{ background-position:100% 50%; filter: drop-shadow(0 0 14px rgba(0,255,136,.6)); }
   }
-
   .icon-btn{ width:40px; height:40px; border-radius:50%; background: rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.25); box-shadow: 0 0 12px rgba(0,255,136,.35), 0 0 24px rgba(0,255,136,.15); display:inline-flex; align-items:center; justify-content:center; color:var(--green); text-decoration:none; }
 
   .title{ margin:0 0 14px; font-size:26px; font-weight:900; color:#bfffe1; text-shadow:0 0 12px rgba(0,255,136,.25); }
@@ -58,7 +55,8 @@
   .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 16px; border-radius:12px;
     background: linear-gradient(180deg, rgba(0,255,136,.95), rgba(0,230,120,.9)); color:#042d16; font-weight:800; border:none; cursor:pointer; }
   .btn.secondary{ background: transparent; color:#bfffe1; border:1px solid rgba(0,255,136,.25); }
-  .ok{ padding:12px; border-radius:12px; background:rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.3); color:#bfffe1; margin-top:12px; }
+
+  .ok{ padding:12px; border-radius:12px; background:rgba(0,255,136,.12); border:1px solid rgba(0,255,136,.3); color:#bfffe1; margin-top:12px; transition: opacity .3s ease; }
 
   .reveal{ opacity:0; transform: translateY(12px); transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1); }
   .reveal.in{ opacity:1; transform:none; }
@@ -70,7 +68,7 @@
 <div class="wrap">
   <div class="header reveal">
     <div class="logo">fluxe</div>
-    <a class="icon-btn" href="index.html" aria-label="На главную">
+    <a class="icon-btn" href="https://fluxe240.github.io/" aria-label="На главную">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </a>
   </div>
@@ -80,7 +78,7 @@
     <form id="appForm" class="row" autocomplete="off" novalidate>
       <div>
         <label for="nick">Ваш ник</label>
-        <input type="text" id="nick" required placeholder="например, pelemeuu">
+        <input type="text" id="nick" required placeholder="например, (рандомный ник)">
       </div>
       <div>
         <label for="title">Название игры/программы</label>
@@ -112,7 +110,6 @@
         <button class="btn secondary" type="reset" id="resetBtn">Сброс</button>
       </div>
 
-      <!-- Убрано сообщение про LocalStorage и ID -->
       <div id="result" class="ok" style="display:none;"></div>
     </form>
   </div>
@@ -127,13 +124,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { threshold: .1 });
   animated.forEach(el => io.observe(el));
 
-  // Снег (HiDPI, ресайз)
+  // Снег
   const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!prefersReduce){
     const c = document.getElementById('bg-snow');
     const ctx = c.getContext('2d');
     let flakes = [], raf=null;
-
     function setCanvasSize(){
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -143,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr,dpr);
       adjustFlakes(w,h);
     }
-
     function makeFlake(w,h){ return { x:Math.random()*w, y:Math.random()*h, r:1+Math.random()*2.2, s:.4+Math.random()*1.2, d:Math.random()*1.5 }; }
     function adjustFlakes(w,h){
       const target = Math.floor(w*h*0.00012);
@@ -151,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if(flakes.length<target){ for(let i=flakes.length;i<target;i++) flakes.push(makeFlake(w,h)); }
       else if(flakes.length>target){ flakes.length = target; }
     }
-
     function step(){
       const w = c.clientWidth, h = c.clientHeight;
       ctx.clearRect(0,0,w,h);
@@ -163,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       raf = requestAnimationFrame(step);
     }
-
     function start(){ if(raf) return; setCanvasSize(); raf = requestAnimationFrame(step); }
     function stop(){ if(raf){ cancelAnimationFrame(raf); raf = null; } }
     window.addEventListener('resize', setCanvasSize);
@@ -171,12 +164,21 @@ document.addEventListener('DOMContentLoaded', () => {
     start();
   }
 
+  // Рандомный ник в placeholder
+  const nick = document.getElementById('nick');
+  function randomNick(){
+    const adj = ['Neo','Iron','Dark','Hyper','Aqua','Crimson','Pixel','Shadow','Ghost','Omega','Cyber','Glitch','Turbo'];
+    const noun= ['Wolf','Ninja','Wizard','Rider','Dragon','Falcon','Hunter','Agent','Phoenix','Knight','Samurai','Rogue','Viper'];
+    const n = Math.floor(Math.random()*90 + 10);
+    return `${adj[Math.floor(Math.random()*adj.length)]}${noun[Math.floor(Math.random()*noun.length)]}${n}`;
+  }
+  nick.placeholder = `например, (${randomNick()})`;
+
   // Капча
   const capQ = document.getElementById('capQ');
   const capA = document.getElementById('capA');
   const capR = document.getElementById('capR');
   let capSum = 0;
-
   function genCap(){
     const a = Math.floor(2 + Math.random()*8);
     const b = Math.floor(2 + Math.random()*8);
@@ -187,39 +189,39 @@ document.addEventListener('DOMContentLoaded', () => {
   capR.addEventListener('click', genCap);
   genCap();
 
-  // Локальная "отправка"
+  // Отправка (LocalStorage общего домена)
   const form = document.getElementById('appForm');
   const res = document.getElementById('result');
   const resetBtn = document.getElementById('resetBtn');
 
   form.addEventListener('submit', e => {
     e.preventDefault();
-    const nick = document.getElementById('nick').value.trim();
     const title = document.getElementById('title').value.trim();
     const vt = document.getElementById('vt').value.trim();
     const link = document.getElementById('link').value.trim();
+    const nickVal = nick.value.trim();
 
-    if(!nick || !title || !vt || !link){ alert('Заполните все поля.'); return; }
+    if(!nickVal || !title || !vt || !link){ alert('Заполните все поля.'); return; }
     if(!/^https?:\/\//i.test(vt) || vt.indexOf('virustotal.com')===-1){ alert('Укажите корректную ссылку на VirusTotal.'); return; }
     if(!/^https?:\/\//i.test(link)){ alert('Укажите корректную ссылку на скачивание.'); return; }
-    if(parseInt(capA.value,10) !== capSum){ alert('Неверная капча. Попробуйте ещё раз.'); genCap(); capA.focus(); return; }
+    if(parseInt(capA.value,10) !== capSum){ alert('Неверная капча.'); genCap(); capA.focus(); return; }
 
     const app = { id: 'app_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
-                  nick, title, virustotal: vt, link, status: 'pending', ts: Date.now() };
-
+                  nick: nickVal, title, virustotal: vt, link, status: 'pending', ts: Date.now() };
     try{
       const db = JSON.parse(localStorage.getItem('fluxeApplications')) || [];
       db.unshift(app);
       localStorage.setItem('fluxeApplications', JSON.stringify(db));
-    }catch(e){
-      alert('Не удалось сохранить заявку. Проверьте настройки браузера.');
-      return;
-    }
+    }catch(e){ alert('Не удалось сохранить заявку.'); return; }
 
+    res.textContent = 'Заявка отправлена!';
     res.style.display = 'block';
-    res.textContent = 'Заявка отправлена!'; // без ID и без текста про LocalStorage
     form.reset();
     genCap();
+
+    // Скрыть через 7 сек
+    setTimeout(() => { res.style.opacity = '0'; }, 6500);
+    setTimeout(() => { res.style.display = 'none'; res.textContent=''; res.style.opacity=''; }, 7000);
   });
 
   resetBtn.addEventListener('click', genCap);
