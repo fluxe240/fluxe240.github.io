@@ -16,6 +16,7 @@
       radial-gradient(1000px 700px at 110% 10%, #0c3a25 0%, var(--bg) 30%),
       var(--bg);
   }
+  /* Полноэкранный снег */
   #bg-snow{ position:fixed; inset:0; width:100vw; height:100vh; z-index:0; pointer-events:none; display:block; }
 
   .fluxe-site{ position:relative; min-height:100vh; overflow:hidden; z-index:1; }
@@ -27,7 +28,7 @@
   }
   .header .container{ max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
 
-  /* Лого с анимацией градиента */
+  /* Лого с градиентом и will-change для плавности */
   .logo{
     will-change: transform;
     font-weight:900; font-size:26px; letter-spacing:.6px; line-height:1;
@@ -105,6 +106,7 @@
 
   .footer{ position:relative; z-index:1; color:var(--muted); text-align:center; padding:24px; border-top:1px solid rgba(0,255,136,.12); background: linear-gradient(180deg, rgba(5,18,12,.3), transparent); }
 
+  /* Reveal-анимация */
   .reveal{ opacity:0; transform: translateY(14px); transition: opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1); will-change:opacity,transform; }
   .reveal.in{ opacity:1; transform:translateY(0); }
 
@@ -221,7 +223,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Reveal-анимация
+  // Reveal-анимации
   const animated = document.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => { if(entry.isIntersecting){ entry.target.classList.add('in'); obs.unobserve(entry.target); } });
@@ -229,12 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
   animated.forEach(el => io.observe(el));
   setTimeout(() => document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('in')), 80);
 
-  // Снег (HiDPI)
+  // Снег (HiDPI, ресайз, пауза при скрытии)
   const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!prefersReduce){
     const c = document.getElementById('bg-snow');
     const ctx = c.getContext('2d');
     let flakes = [], raf=null;
+
     function setCanvasSize(){
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -269,28 +272,35 @@ document.addEventListener('DOMContentLoaded', () => {
     start();
   }
 
-  // Скролл-анимация: лого влево-вниз, кнопка вправо-вниз
+  // Скролл-анимация: логотип влево-вниз, кнопка вправо-вниз (смещение по X и Y)
   const logo = document.getElementById('logo');
   const propose = document.getElementById('proposeBtn');
   let lastY = 0, ticking = false;
-  const maxX = 60, maxY = 40; // пределы смещения в px
+  const maxX = 120; // максимальный сдвиг по X
+  const maxY = 90;  // максимальный сдвиг по Y
+
   function onScroll(){
-    lastY = window.scrollY || window.pageYOffset;
-    if(!ticking){ requestAnimationFrame(update); ticking = true; }
+    lastY = window.scrollY || document.documentElement.scrollTop || 0;
+    if(!ticking){
+      requestAnimationFrame(applyShift);
+      ticking = true;
+    }
   }
-  function update(){
+  function applyShift(){
     const y = lastY;
-    const logoX = Math.min(maxX, y * 0.08);
-    const logoY = Math.min(maxY, y * 0.06);
-    const btnX  = Math.min(maxX, y * 0.08);
-    const btnY  = Math.min(maxY, y * 0.06);
-    logo.style.transform   = `translate(${-logoX}px, ${logoY}px)`;
-    propose.style.transform= `translate(${btnX}px, ${btnY}px)`;
+    const xShift = Math.min(maxX, y * 0.20); // боковое смещение
+    const yShift = Math.min(maxY, y * 0.15); // вертикальное смещение
+
+    // Лого — влево и вниз
+    logo.style.transform = `translate3d(${-xShift}px, ${yShift}px, 0)`;
+    // Кнопка — вправо и вниз
+    propose.style.transform = `translate3d(${xShift}px, ${yShift}px, 0)`;
+
     ticking = false;
   }
   if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     window.addEventListener('scroll', onScroll, { passive:true });
-    onScroll();
+    onScroll(); // первичное применение
   }
 });
 </script>
