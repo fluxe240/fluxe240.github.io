@@ -85,6 +85,13 @@
   .card:hover{ transform: translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,.5), 0 0 30px rgba(0,255,136,.15); border-color: rgba(0,255,136,.35); }
   .thumb{ position:relative; padding-top:58%; background-size:cover; background-position:center; filter:saturate(110%); }
   .thumb::after{ content:""; position:absolute; inset:0; background: radial-gradient(60% 80% at 70% 10%, rgba(0,255,136,.18), transparent 60%); mix-blend-mode: screen; }
+  .thumb.placeholder{
+    display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(135deg, rgba(0,255,136,.15), rgba(0,255,136,.05));
+  }
+  .thumb.placeholder::after{ display:none; }
+  .thumb.placeholder span{ font-weight:900; font-size: clamp(28px,5vw,42px); color:#cffff0; text-transform:uppercase; letter-spacing:.5px; }
+
   .card-body{ padding:16px; display:grid; gap:12px; }
   .card-title{ font-size:20px; font-weight:800; margin:0; }
   .meta{ display:flex; align-items:center; gap:8px; }
@@ -147,6 +154,7 @@
     <h1 class="title reveal">Скачивайте игры и программы в один клик</h1>
   </section>
 
+  <!-- Игры -->
   <div class="section">
     <h2 class="section-title reveal">Игры</h2>
   </div>
@@ -185,6 +193,7 @@
     </article>
   </section>
 
+  <!-- Программы -->
   <div class="section">
     <h2 class="section-title reveal">Программы</h2>
   </div>
@@ -215,6 +224,30 @@
     </article>
   </section>
 
+  <!-- Ссылки -->
+  <div class="section">
+    <h2 class="section-title reveal">Ссылки</h2>
+  </div>
+  <section class="catalog" aria-label="Полезные ссылки">
+    <!-- manilua (без фото) -->
+    <article class="card reveal">
+      <div class="thumb placeholder"><span>M</span></div>
+      <div class="card-body">
+        <h3 class="card-title">manilua</h3>
+        <a class="btn reveal" href="https://www.piracybound.com/manilua" target="_blank" rel="noopener noreferrer">Перейти</a>
+      </div>
+    </article>
+
+    <!-- Steam DB -->
+    <article class="card reveal">
+      <div class="thumb" style="background-image:url('https://steamdb.info/static/logos/512px.png'); background-size:contain; background-color:rgba(0,255,136,.06);"></div>
+      <div class="card-body">
+        <h3 class="card-title">Steam DB</h3>
+        <a class="btn reveal" href="https://steamdb.info/" target="_blank" rel="noopener noreferrer">Перейти</a>
+      </div>
+    </article>
+  </section>
+
   <footer class="footer reveal">
     <small>by pelemeuu</small>
   </footer>
@@ -222,6 +255,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // Reveal
   const animated = document.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => { if(entry.isIntersecting){ entry.target.classList.add('in'); obs.unobserve(entry.target); } });
@@ -229,15 +263,13 @@ document.addEventListener('DOMContentLoaded', () => {
   animated.forEach(el => io.observe(el));
   setTimeout(() => document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('in')), 80);
 
+  // Снег (адаптивная плотность)
   const prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!prefersReduce){
     const c = document.getElementById('bg-snow');
     const ctx = c.getContext('2d');
     let flakes = [], raf=null;
-
-    function densityFactor(){
-      return window.matchMedia('(max-width: 768px)').matches ? 0.00007 : 0.00012;
-    }
+    function densityFactor(){ return window.matchMedia('(max-width: 768px)').matches ? 0.00007 : 0.00012; }
     function setCanvasSize(){
       const dpr = Math.max(1, window.devicePixelRatio || 1);
       const w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
